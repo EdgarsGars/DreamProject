@@ -5,6 +5,7 @@
  */
 package Game;
 
+import static Game.MainGame.monsters;
 import Objects.Monster;
 import Objects.Player;
 import Objects.Projectile;
@@ -98,17 +99,29 @@ public class ConnectionToServer implements Runnable {
                 }
             }
         } else if (data.startsWith("MONSTER")) {
+            int ID = Integer.parseInt(data.split(" ")[1]);
             int x = Integer.parseInt(data.split(" ")[2]);
             int y = Integer.parseInt(data.split(" ")[3]);
-            if (MainGame.monsters.contains(new Monster(Integer.parseInt(data.split(" ")[1])))) {
-                MainGame.monsters.get(MainGame.monsters.indexOf(new Monster(Integer.parseInt(data.split(" ")[1])))).setLocation(x, y);
-            } else {
-                Monster m = new Monster(Integer.parseInt(data.split(" ")[1]));
-                m.setLocation(x, y);
-                MainGame.monsters.add(m);
 
+            Monster m = new Monster(Integer.parseInt(data.split(" ")[1]));
+            m.setLocation(x, y);
+            if(!monsters.contains(m)){
+                System.out.println("NEW");
+                monsters.add(m);
+            }else 
+                for (Monster monster : monsters) {
+                    if(monster.getID() == ID){
+                        monster.setLocation(x, y);
+                    }
+                }
+            for (Monster monster : monsters) {
+                System.out.println("----");
+                System.out.println(monster);
+                System.out.println("----");
             }
+                
         }
+
 
     }
 

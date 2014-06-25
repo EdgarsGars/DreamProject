@@ -20,7 +20,6 @@ public class Monster extends GameObject {
     private static long ID = 0;
     private long monsterID;
     private int health = 3;
-
     public Monster() {
         monsterID = ++ID;
     }
@@ -32,16 +31,16 @@ public class Monster extends GameObject {
     @Override
     public void update() {
         if(!GameServer.users.isEmpty()){
-            x += (new ArrayList<>(GameServer.users).get(0).getX()- x) / 5;
-            y += (new ArrayList<>(GameServer.users).get(0).getY()- y) / 5;
-            GameServer.sendToAll(toString());
+            x += (new ArrayList<>(GameServer.users).get(0).getX()- x) / 0.01f;
+            y += (new ArrayList<>(GameServer.users).get(0).getY()- y) / 0.01f;
+            GameServer.sendToAll(this.toString());
         }
     }
 
     @Override
     public void draw(Graphics g) {
         g.setColor(Color.red);
-        g.fillRect(x, y, width, height);
+        g.fillOval(x,y,64,64);
     }
 
     public String toString(){
@@ -62,6 +61,10 @@ public class Monster extends GameObject {
             return false;
         }
         return true;
+    }
+
+    public long getID() {
+        return monsterID;
     }
     
     
