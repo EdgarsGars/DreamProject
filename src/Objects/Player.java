@@ -10,6 +10,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import javax.imageio.ImageIO;
 
 /**
@@ -20,33 +21,42 @@ public class Player extends GameObject {
 
     static {
         try {
-            image = ImageIO.read(new File("resources/img/chars.png"));
+            image = ImageIO.read(new File("src/resources/img/chars.png"));
+            leftAnimation = new Image[3];
+            topAnimation = new Image[3];
+            botAnimation = new Image[3];
+            rightAnimation = new Image[3];
+
         } catch (IOException ex) {
             System.out.println("File not found");
         }
+        init();
     }
-    private static Image[] leftAnimation = new Image[3];
-    private static Image[] rightAnimation = new Image[3];
-    private static Image[] topAnimation = new Image[3];
-    private static Image[] botAnimation = new Image[3];
+    private static Image[] leftAnimation;
+    private static Image[] rightAnimation;
+    private static Image[] topAnimation;
+    private static Image[] botAnimation;
+    private Image[] activeAnimation;
+    private Image activeImage;
+    private String username;
 
     private int dy;
     private int dx;
     private float frame = 0;
 
     public Player() {
-        init();
         width = GameObject.tileSize;
         height = GameObject.tileSize;
-        image = botAnimation[0];
+        activeAnimation = botAnimation;
+        activeImage = activeAnimation[0];
     }
 
-    public void init() {
-        for(int i=0;i<leftAnimation.length;i++){
-            leftAnimation[i] = ((BufferedImage)image).getSubimage(i*32, 32, 32, 32);
-            rightAnimation[i] = ((BufferedImage)image).getSubimage(i*32, 64, 32, 32);
-            botAnimation[i] = ((BufferedImage)image).getSubimage(i*32, 0, 32, 32);
-            topAnimation[i] = ((BufferedImage)image).getSubimage(i*32, 96, 32, 32);
+    public static void init() {
+        for (int i = 0; i < leftAnimation.length; i++) {
+            leftAnimation[i] = ((BufferedImage) image).getSubimage(i * 32, 32, 32, 32);
+            rightAnimation[i] = ((BufferedImage) image).getSubimage(i * 32, 64, 32, 32);
+            botAnimation[i] = ((BufferedImage) image).getSubimage(i * 32, 0, 32, 32);
+            topAnimation[i] = ((BufferedImage) image).getSubimage(i * 32, 96, 32, 32);
         }
     }
 
@@ -54,28 +64,31 @@ public class Player extends GameObject {
     public void update() {
         x += dx;
         y += dy;
-        
-        if(dx > 0){
-            image = rightAnimation[(int)frame];
-        }else if(dx < 0){
-            image = leftAnimation[(int)frame];
+        if (dx != 0 || dy != 0) {
+            if (dx > 0) {
+                activeAnimation = rightAnimation;
+            } else if (dx < 0) {
+                activeAnimation = leftAnimation;
+            }
+            if (dy > 0) {
+                activeAnimation = botAnimation;
+            } else if (dy < 0) {
+                activeAnimation = topAnimation;
+            }
+            activeImage = activeAnimation[(int) frame];
         }
-        if(dy > 0){
-            image = botAnimation[(int)frame];
-        }else if(dy < 0){
-            image = topAnimation[(int)frame];
-        }
-        
+
         frame += 0.3f;
-        if(frame > 2){
+        if (frame > activeAnimation.length) {
             frame = 0;
         }
     }
 
     @Override
     public void draw(Graphics g) {
-        g.drawImage(image, x, y, width, height, null);
-        g.drawRect(x, y, width-5, height);
+        g.drawImage(activeImage, x, y, width, height, null);
+        g.drawRect(x, y, width - 5, height);
+        g.drawString(username, x-5, y);
     }
 
     public void setDy(int dy) {
@@ -84,6 +97,36 @@ public class Player extends GameObject {
 
     public void setDx(int dx) {
         this.dx = dx;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 61 * hash + Objects.hashCode(this.username);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Player other = (Player) obj;
+        if (!Objects.equals(this.username, other.username)) {
+            return false;
+        }
+        return true;
     }
 
 }
