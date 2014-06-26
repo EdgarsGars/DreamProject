@@ -62,7 +62,7 @@ public class ConnectionToServer implements Runnable {
 
     }
 
-    public synchronized void processMessage(String data) {
+    public  void processMessage(String data) {
         if (data.startsWith("CONNECT")) {
 
         } else if (data.startsWith("MOVE")) {
@@ -102,30 +102,27 @@ public class ConnectionToServer implements Runnable {
             int ID = Integer.parseInt(data.split(" ")[1]);
             int x = Integer.parseInt(data.split(" ")[2]);
             int y = Integer.parseInt(data.split(" ")[3]);
+            int targetX = Integer.parseInt(data.split(" ")[5]);
+            int targetY = Integer.parseInt(data.split(" ")[6]);
 
             Monster m = new Monster(Integer.parseInt(data.split(" ")[1]));
+            m.setTarget(targetX, targetY);
             m.setLocation(x, y);
             if(!monsters.contains(m)){
-                System.out.println("NEW");
                 monsters.add(m);
             }else 
                 for (Monster monster : monsters) {
                     if(monster.getID() == ID){
                         monster.setLocation(x, y);
+                        monster.setTarget(targetX, targetY);
                     }
                 }
-            for (Monster monster : monsters) {
-                System.out.println("----");
-                System.out.println(monster);
-                System.out.println("----");
-            }
-                
         }
 
 
     }
 
-    public synchronized void sendMessage(String msg) {
+    public  void sendMessage(String msg) {
         output.write(msg + "\n");
         output.flush();
     }

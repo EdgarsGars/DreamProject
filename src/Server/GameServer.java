@@ -18,7 +18,7 @@ import java.util.HashSet;
 public class GameServer {
 
     private ServerSocket server;
-
+    public static MobHandler mobHandler = new MobHandler();
     public static HashSet<ClientHandler> users = new HashSet<>();
 
     public GameServer() {
@@ -31,7 +31,7 @@ public class GameServer {
     }
 
     public void run() {
-        new Thread(new MobHandler()).start();
+        new Thread(mobHandler).start();
         while (true) {
             try {
                 Socket socket = server.accept();

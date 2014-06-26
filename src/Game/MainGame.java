@@ -35,9 +35,8 @@ public class MainGame extends JPanel implements KeyListener, MouseListener {
     public static ArrayList<Projectile> projectiles = new ArrayList<>();
     public static ArrayList<Monster> monsters = new ArrayList<>();
     public static ArrayList<GameObject> toRemove = new ArrayList<>();
-    
-    
-    private int map[][] = new int[10][10];
+
+    private int map[][] = new int[20][20];
     public HashSet<Player> players = new HashSet<>();
     private Player player = new Player();
     private final boolean[] keyDown = new boolean[4];
@@ -46,7 +45,7 @@ public class MainGame extends JPanel implements KeyListener, MouseListener {
 
     public MainGame() {
         try {
-            server = new ConnectionToServer(InetAddress.getByName("91.105.87.91"), 9999, this);
+            server = new ConnectionToServer(InetAddress.getByName("127.0.0.1"), 9999, this);
             addKeyListener(this);
             addMouseListener(this);
             String username = JOptionPane.showInputDialog("Enter your name: ");
@@ -57,8 +56,8 @@ public class MainGame extends JPanel implements KeyListener, MouseListener {
             setFocusable(true);
             new Thread(server).start();
 
-            for (int i = 0; i < 100; i++) {
-                map[i / 10][i % 10] = 1;
+            for (int i = 0; i < 400; i++) {
+                map[i / 20][i % 20] = 1;
             }
 
         } catch (UnknownHostException ex) {
@@ -115,15 +114,16 @@ public class MainGame extends JPanel implements KeyListener, MouseListener {
         }
     }
 
-    public void drawGameObjects(Graphics g) {
+    public void drawGameObjects(final Graphics g) {
         for (GameObject gameObject : gameObjects) {
             gameObject.draw(g);
         }
         for (Projectile p : projectiles) {
             p.draw(g);
         }
-        for (Monster m : monsters) {
-            m.draw(g);
+        
+        for (int i = 0; i < monsters.size(); i++) {
+            monsters.get(i).draw(g);
         }
     }
 
@@ -157,7 +157,9 @@ public class MainGame extends JPanel implements KeyListener, MouseListener {
         if (keyDown[0] || keyDown[1] || keyDown[2] || keyDown[3]) {
             GameSounds.playSound("footstep_grass.wav");
         }
-        if(running)server.sendMessage("MOVE" + " " + player.getUsername() + " " + player.getX() + " " + player.getY() + " ");
+        if (running) {
+            server.sendMessage("MOVE" + " " + player.getUsername() + " " + player.getX() + " " + player.getY() + " ");
+        }
     }
 
     @Override
@@ -179,6 +181,8 @@ public class MainGame extends JPanel implements KeyListener, MouseListener {
         } else if (e.getKeyChar() == 'd') {
             keyDown[1] = true;
             player.setDx(4);
+        } else if (e.getKeyChar() == ' ') {
+            server.sendMessage("GIVEMOB");
         }
 
     }
@@ -239,8 +243,8 @@ public class MainGame extends JPanel implements KeyListener, MouseListener {
     }
 
     void disconnect() {
-            running = false;
-            server.sendMessage("DISCONNECT " + player.getUsername());
+        running = false;
+        server.sendMessage("DISCONNECT " + player.getUsername());
     }
 
 }
