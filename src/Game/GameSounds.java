@@ -25,7 +25,7 @@ public class GameSounds {
                 public void run() {
                     try {
                         Clip clip = AudioSystem.getClip();
-                        AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File("src/resources/sounds/" + name));
+                        AudioInputStream inputStream = AudioSystem.getAudioInputStream(ClassLoader.getSystemClassLoader().getResourceAsStream("resources/sounds/" + name));
                         clip.open(inputStream);
                         clip.start();
                         Thread.sleep(370);

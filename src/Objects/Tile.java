@@ -19,21 +19,18 @@ import javax.imageio.ImageIO;
  * @author Edgar
  */
 public class Tile {
-    public static Image[][] dirtGrass;
-    
+
+    public static Image grass;
+
     static {
         try {
-            Image image = ImageIO.read(new File("src/resources/img/tiles.png"));
-            dirtGrass = new Image[3][3];
-            for(int i=0;i<9;i++){
-                dirtGrass[i/3][i%3] = ((BufferedImage) image).getSubimage((i%3)*128, (i/3)*128, 128, 128);
-            }
-            
+            grass = ImageIO.read(ClassLoader.getSystemClassLoader().getResourceAsStream("resources/img/ground.png"));
+
+            grass = ((BufferedImage) grass).getSubimage(5*64,3*64,64,64);
+
         } catch (IOException ex) {
             Logger.getLogger(Tile.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    
 
 }

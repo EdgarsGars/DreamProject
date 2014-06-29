@@ -5,8 +5,14 @@
  */
 package Server;
 
+import Game.MainGame;
+import Objects.GameObject;
 import Objects.Monster;
+import Objects.Player;
+import Objects.Projectile;
+import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
 
 /**
@@ -15,17 +21,12 @@ import java.util.Random;
  */
 public class MobHandler implements Runnable {
 
+    public static HashSet<GameObject> toRemove = new HashSet<>();
     ArrayList<Monster> monsters = new ArrayList<>();
     boolean running = true;
 
     @Override
     public void run() {
-        Monster m = new Monster();
-        Monster m2 = new Monster();
-        m2.setLocation(-50, 80);
-        m.setLocation(100, 100);
-        monsters.add(m);
-        monsters.add(m2);
         while (running) {
             long lastLoopTime = System.nanoTime();
             final int TARGET_FPS = 60;
@@ -34,8 +35,45 @@ public class MobHandler implements Runnable {
                 long now = System.nanoTime();
                 lastLoopTime = now;
 
-                update(0,monsters.size()/2);
-                update(monsters.size()/2,monsters.size());
+                for (Projectile p : GameServer.projectiles) {
+                    p.update();
+                    Monster r = null;
+                    for (Monster m : monsters) {
+                        if (new Rectangle(m.getX(), m.getY(), 100, 100).intersects(p.getX(), p.getY(), 1, 1)) {
+                            m.setHealth(m.getHealth() - 1);
+                            r = m;
+                            break;
+                        }
+                    }
+                    if (r != null) {
+                        if (r.getHealth() == 0) {
+                            GameServer.sendToAll("RMONSTER " + r.getID());
+                            monsters.remove(r);
+                        }
+                        toRemove.add(p);
+                    }
+
+                }
+
+                for (GameObject gameObject : toRemove) {
+                    if (gameObject instanceof Projectile) {
+                        GameServer.projectiles.remove((Projectile) gameObject);
+                    }else if(gameObject instanceof Player){
+                        GameServer.players.remove((Player)gameObject);
+                    }
+                }
+                toRemove.clear();
+                for (int i = 0; i < GameServer.projectiles.size(); i++) {
+                    if (GameServer.projectiles.get(i).checkRemove()) {
+                        GameServer.projectiles.remove(GameServer.projectiles.get(i));
+                        i--;
+                    }
+                }
+
+                if (!monsters.isEmpty()) {
+                    update(0, monsters.size() / 2);
+                    update(monsters.size() / 2, monsters.size());
+                }
 
                 try {
                     long sleepTime = (lastLoopTime - System.nanoTime() + OPTIMAL_TIME) / 1000000;
@@ -52,13 +90,21 @@ public class MobHandler implements Runnable {
 
     public void update(final int start, final int end) {
         new Thread(new Runnable() {
-
             @Override
             public void run() {
                 for (int i = start; i < end; i++) {
                     monsters.get(i).update();
                     if (!GameServer.users.isEmpty()) {
-                        monsters.get(i).setTarget(new ArrayList<ClientHandler>(GameServer.users).get(0).getX() + new Random().nextInt(64), new ArrayList<ClientHandler>(GameServer.users).get(0).getY() + new Random().nextInt(64));
+                        double min = 10000;
+                        Player cl = null;
+                        for (Player user : GameServer.players) {
+                            double dist = Math.sqrt(Math.pow(user.getX() - monsters.get(i).getY(), 2) + Math.pow(user.getY() - monsters.get(i).getY(), 2));
+                            if (dist < min) {
+                                cl = user;
+                                min = dist;
+                            }
+                        }
+                        if(cl!=null)monsters.get(i).setTarget(cl.getX(), cl.getY() + new Random().nextInt(32));
                         GameServer.sendToAll(monsters.get(i).toString());
                     }
                 }
@@ -69,16 +115,15 @@ public class MobHandler implements Runnable {
 
     public void spawnMonster() {
         int sk = new Random().nextInt(2);
+        Monster m = new Monster();
         if (sk == 0) {
-            Monster m = new Monster();
+
             m.setLocation(0, 0);
-            monsters.add(m);
         } else if (sk == 1) {
-            Monster m = new Monster();
-            m.setLocation(100, 100);
-            monsters.add(m);
+            m.setLocation(300, 300);
         }
 
+        monsters.add(m);
     }
 
 }

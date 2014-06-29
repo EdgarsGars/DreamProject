@@ -1,0 +1,7 @@
+Ar vienadiem nikiem var ieiet
+Dazreiz kresh delj ta ka megina izdzest fore cikla no masiva elemntu un lidz ar to ir kluda
+Lodes apstajas nospiestaja vieta
+Pirms speletajs ievada vardu vins paradas pasaule
+Pad dioganali skrien atrak
+var uzbrukt kad beigts
+sound plays when dead and when minimizetd

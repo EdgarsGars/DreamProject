@@ -5,6 +5,7 @@
  */
 package Objects;
 
+import Game.MainGame;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -21,7 +22,7 @@ public class Player extends GameObject {
 
     static {
         try {
-            image = ImageIO.read(new File("src/resources/img/chars.png"));
+            image = ImageIO.read(ClassLoader.getSystemClassLoader().getResourceAsStream("resources/img/chars.png"));
             leftAnimation = new Image[3];
             topAnimation = new Image[3];
             botAnimation = new Image[3];
@@ -39,7 +40,9 @@ public class Player extends GameObject {
     private Image[] activeAnimation;
     private Image activeImage;
     private String username;
-
+    private int health;
+    private String direction = "Left";
+    private boolean moving = false;
     private int dy;
     private int dx;
     private float frame = 0;
@@ -49,6 +52,7 @@ public class Player extends GameObject {
         height = GameObject.tileSize;
         activeAnimation = botAnimation;
         activeImage = activeAnimation[0];
+        health = 14;
     }
 
     public static void init() {
@@ -62,33 +66,73 @@ public class Player extends GameObject {
 
     @Override
     public void update() {
-        x += dx;
-        y += dy;
-        if (dx != 0 || dy != 0) {
-            if (dx > 0) {
-                activeAnimation = rightAnimation;
-            } else if (dx < 0) {
-                activeAnimation = leftAnimation;
-            }
-            if (dy > 0) {
-                activeAnimation = botAnimation;
-            } else if (dy < 0) {
-                activeAnimation = topAnimation;
-            }
-            activeImage = activeAnimation[(int) frame];
-        }
+        if (MainGame.player.equals(this)) {
+            x += dx;
+            y += dy;
 
-        frame += 0.3f;
-        if (frame > activeAnimation.length) {
-            frame = 0;
+            if (dx != 0 || dy != 0) {
+                moving = true;
+                if (dx > 0) {
+                    activeAnimation = rightAnimation;
+                    direction = "Right";
+                } else if (dx < 0) {
+                    activeAnimation = leftAnimation;
+                    direction = "Left";
+                }
+                if (dy > 0) {
+                    activeAnimation = botAnimation;
+                    direction = "Bot";
+                } else if (dy < 0) {
+                    activeAnimation = topAnimation;
+                    direction = "Top";
+                }
+            }
+            if (x < 0) {
+                x = 0;
+            }
+            if (x > 19 * GameObject.tileSize) {
+                x = 19 * GameObject.tileSize;
+            }
+            if (y < 0) {
+                y = 0;
+            }
+            if (y > 19 * GameObject.tileSize) {
+                y = 19 * GameObject.tileSize;
+            }
+        } else {
+            switch (direction) {
+                case "Left":
+                    activeAnimation = leftAnimation;
+                    break;
+                case "Right":
+                    activeAnimation = rightAnimation;
+                    break;
+                case "Top":
+                    activeAnimation = topAnimation;
+                    break;
+                case "Bot":
+                    activeAnimation = botAnimation;
+                    break;
+            }
         }
     }
 
     @Override
     public void draw(Graphics g) {
-        g.drawImage(activeImage, x, y, width, height, null);
-        g.drawRect(x, y, width - 5, height);
-        g.drawString(username, x-5, y);
+        if (moving) {
+            frame += 0.3f;
+            if (frame > activeAnimation.length) {
+                frame = 0;
+            }
+            activeImage = activeAnimation[(int) frame];
+        }
+        int xd = x - (int) MainGame.camera.getX();
+        int yd = y - (int) MainGame.camera.getY();
+        if (MainGame.camera.intersects(x, y, 1, 1)) {
+            g.drawImage(activeImage, xd, yd, width, height, null);
+            g.drawRect(xd, yd, width - 5, height);
+            g.drawString(username, xd, yd - 5);
+        }
     }
 
     public void setDy(int dy) {
@@ -129,4 +173,31 @@ public class Player extends GameObject {
         return true;
     }
 
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = (health<0)? 0: health;
+    }
+
+    public String getDirection() {
+        return direction;
+    }
+
+    public void setDirection(String direction) {
+        this.direction = direction;
+    }
+
+    public int getDx() {
+        return dx;
+    }
+
+    public int getDy() {
+        return dy;
+    }
+
+    public void setMoving(boolean moving) {
+        this.moving = moving;
+    }
 }

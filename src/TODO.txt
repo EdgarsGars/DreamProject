@@ -1,0 +1,19 @@
+Zombiju un speletaju nave    +++
+4 speletaji tikai
+Skanas +++
+Skina izvele -
+Tops ?
+Punkti ?
+GUI +
+MENU 
+Smukaka karte
+Zombiji paradas vilnjos
+Monstri Izvelas merki un tam pieturas
+Dazadi Monstri
+Zombiji paradas kapsetas
+Speletajs nomirst paradas kapakmens   +++
+Beigts speletajs var apskatit karti *
+Atdalit servera klases no clienta
+Speletaju animacijas
+Sautrinu aizvietot ar bultu vai fireball
+AMMO

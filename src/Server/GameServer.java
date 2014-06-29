@@ -5,10 +5,13 @@
  */
 package Server;
 
+import Objects.GameObject;
+import Objects.Player;
+import Objects.Projectile;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
@@ -20,6 +23,9 @@ public class GameServer {
     private ServerSocket server;
     public static MobHandler mobHandler = new MobHandler();
     public static HashSet<ClientHandler> users = new HashSet<>();
+    public static ArrayList<Player> players = new ArrayList<>();
+    public static ArrayList<Projectile> projectiles = new ArrayList();
+    public static ArrayList<GameObject> tombstones = new ArrayList<>();
 
     public GameServer() {
         try {

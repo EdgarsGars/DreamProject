@@ -5,6 +5,9 @@
  */
 package Server;
 
+import Game.MainGame;
+import Objects.Player;
+import Objects.Projectile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,11 +25,12 @@ public class ClientHandler implements Runnable {
     private Socket socket;
     private BufferedReader input;
     private PrintWriter output;
-    private int x, y;
-    private String name;
+    private Player player;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
+        player = new Player();
+        GameServer.players.add(player);
     }
 
     @Override
@@ -59,49 +63,65 @@ public class ClientHandler implements Runnable {
     }
 
     public void processMessage(String msg) {
-        System.out.println("[" + socket.getInetAddress() + ":" + socket.getPort() + "] " + msg);
         if (msg.startsWith("DISCONNECT")) {
             GameServer.users.remove(this);
+            for (Player p : GameServer.players) {
+                if (p.getUsername().equals(msg.split(" ")[1])) {
+                    MobHandler.toRemove.add(p);
+                    break;
+                }
+            }
             for (ClientHandler user : GameServer.users) {
                 user.sendMessage("DISCONNECT " + msg.split(" ")[1]);
             }
+
         } else if (msg.startsWith("MOVE")) {
-            x = Integer.parseInt(msg.split(" ")[2]);
-            y = Integer.parseInt(msg.split(" ")[3]);
+            System.out.println(msg);
+            int x = Integer.parseInt(msg.split(" ")[2]);
+            int y = Integer.parseInt(msg.split(" ")[3]);
+            String name = msg.split(" ")[1];
+            player.setUsername(name);
+            player.setLocation(x, y);
             GameServer.sendToAllExecpt(msg, this);
-        } else if(msg.startsWith("GIVEMOB")){
-           GameServer.mobHandler.spawnMonster();
-        }else{
-           GameServer.sendToAll(msg);
+            
+            
+            boolean toAdd = true;
+            for (Player pl : GameServer.players) {
+                if(pl.getUsername().equals(name)){
+                    toAdd = false;
+                    break;
+                }
+            }
+            if(toAdd){
+                GameServer.players.add(player);
+            }
+        } else if (msg.startsWith("GIVEMOB")) {
+            GameServer.mobHandler.spawnMonster();
+
+        } else if (msg.startsWith("PROJECTILE|")) {
+            System.out.println(msg);
+            int x = Integer.parseInt(msg.split("\\|")[1].split(" ")[0]);
+            int y = Integer.parseInt(msg.split("\\|")[1].split(" ")[1]);
+            int tx = Integer.parseInt(msg.split("\\|")[2].split(" ")[0]);
+            int ty = Integer.parseInt(msg.split("\\|")[2].split(" ")[1]);
+            GameServer.projectiles.add(new Projectile(x, y, tx, ty));
+
+        } else if (msg.startsWith("DEAD")) {
+            String username = msg.split(" ")[1];
+            for (Player p : GameServer.players) {
+                if (p.getUsername().equals(username)) {
+                    MobHandler.toRemove.add(p);
+                    break;
+                }
+            }
         }
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        
+        GameServer.sendToAll(msg);
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj
+    ) {
         if (obj == null) {
             return false;
         }
